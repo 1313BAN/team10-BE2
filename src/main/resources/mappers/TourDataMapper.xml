@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.ssafy.enjoytrip.tour.dao.ITourDAO">
+
+
+    <resultMap id="TourWithOpeningPeriodsMap" type="com.ssafy.enjoytrip.tour.dto.TourDTO">
+        <result property="addr1" column="addr1"/>
+        <result property="addr2" column="addr2"/>
+        <result property="contentId" column="content_id"/>
+        <result property="contentTypeId" column="content_type_id"/>
+        <result property="image" column="first_image1"/>
+        <result property="imageThumbnail" column="first_image2"/>
+        <result property="latitude" column="latitude"/>
+        <result property="longitude" column="longitude"/>
+        <result property="title" column="title"/>
+        <result property="zipcode" column="zipcode"/>
+        <result property="rating" column="rating"/>
+        <result property="totalRatings" column="user_ratings_total"/>
+        <result property="isCafe" column="is_cafe"/>
+
+        <collection property="openingHours.periods" ofType="com.ssafy.enjoytrip.tour.dto.OpeningPeriodDTO">
+            <result property="dayOfWeek" column="day_of_week"/>
+            <result property="openTime" column="open_time"/>
+            <result property="closeTime" column="close_time"/>
+        </collection>
+    </resultMap>
+    
+    
+    
+    
+	<select id="getAreaList" resultType="com.ssafy.enjoytrip.tour.dto.AreaDTO">
+		SELECT sido_code AS code, sido_name AS name FROM sidos
+	</select>
+	
+	<select id="getSigunguList" resultType="com.ssafy.enjoytrip.tour.dto.SigunguDTO">
+		SELECT gugun_code AS code, gugun_name AS name FROM guguns WHERE sido_code = #{areaCode}
+	</select>
+	
+	<select id="getTourDatum" resultType="com.ssafy.enjoytrip.tour.dto.TourDTO">
+		SELECT
+            a.addr1, a.addr2, a.content_id, a.content_type_id,
+            a.first_image1, a.first_image2, a.latitude, a.longitude,
+            a.title, a.zipcode, a.rating, a.user_ratings_total,
+            a.is_cafe, p.day_of_week, p.open_time, p.close_time
+        FROM attractions a
+        LEFT JOIN opening_period p ON a.content_id = p.content_id
+        WHERE a.area_code = #{areaCode}
+        <if test="sigunguCode != null">
+            AND a.si_gun_gu_code = #{sigunguCode}
+        </if>
+        <if test="contentTypeId != null">
+            AND a.content_type_id = #{contentTypeId}
+        </if>
+	</select>
+	
+	<select id="getTourDataByContentId" resultType="com.ssafy.enjoytrip.tour.dto.TourDTO">
+        SELECT
+            a.addr1, a.addr2, a.content_id, a.content_type_id,
+            a.first_image1, a.first_image2, a.latitude, a.longitude,
+            a.title, a.zipcode, a.rating, a.user_ratings_total,
+            a.is_cafe, p.day_of_week, p.open_time, p.close_time
+        FROM attractions a
+        LEFT JOIN opening_period p ON a.content_id = p.content_id
+        WHERE a.content_id = #{contentId}
+    </select>
+    
+    <select id="getCoordinates" resultType="com.ssafy.enjoytrip.model.dto.CoordinateDTO">
+    	SELECT
+    		latitude,
+    		longitude
+    	FROM
+    		attractions
+    	WHERE
+    		content_id IN
+    		<foreach item="id" collection="list" open="(" separator="," close=")">
+    			#{id}
+    		</foreach>
+    </select>
+    
+    <update id="updateRatingInfo" parameterType="com.ssafy.enjoytrip.tour.dto.TourDTO">
+   		UPDATE attractions
+   		SET
+   			rating = #{rating},
+   			user_ratings_total = #{totalRatings}
+   		WHERE
+   			content_id = #{contentId}
+    </update>
+    
+    <update id="updateCafe" parameterType="com.ssafy.enjoytrip.tour.dto.TourDTO">
+   		UPDATE attractions
+   		SET
+   			is_cafe = #{isCafe}
+   		WHERE
+   			content_id = #{contentId}
+    </update>
+    
+    <insert id="insertOpeningPeriods" parameterType="map">
+    	INSERT INTO opening_period (content_id, day_of_week, open_time, close_time) 
+    	VALUES
+    	<foreach collection="periods" item="p" separator=",">
+    		(#{contentId}, #{p.dayOfWeek}, #{p.openTime}, #{p.closeTime})
+    	</foreach>
+    </insert>
+</mapper>

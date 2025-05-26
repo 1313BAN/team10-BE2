@@ -1,0 +1,63 @@
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+# =============== Java ===============
+*.class
+*.log
+
+# =============== OS 별 ===============
+.DS_Store
+Thumbs.db
+
+# =============== Logs ===============
+*.log
+logs/
+*.tmp
+
+# =============== Environment ===============
+.env
+.env.*
+*.local
+
+# =============== 기타 캐시성 파일 ===============
+*.swp
+*.bak
+*.tmp
+
+# =============== Lombok 관련 (optional) ===============
+lombok.config
+
+# 대용량 파일
+src/main/resources/data/south-korea-latest.osm.pbf
+data/graph-cache
