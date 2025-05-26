@@ -21,6 +21,7 @@
         <result property="totalRatings" column="user_ratings_total"/>
         <result property="isCafe" column="is_cafe"/>
 
+		<result property="placeId" column="place_id"/>
         <collection property="openingHours.periods" ofType="com.ssafy.enjoytrip.tour.dto.OpeningPeriodDTO">
             <result property="dayOfWeek" column="day_of_week"/>
             <result property="openTime" column="open_time"/>
@@ -44,7 +45,7 @@
             a.addr1, a.addr2, a.content_id, a.content_type_id,
             a.first_image1, a.first_image2, a.latitude, a.longitude,
             a.title, a.zipcode, a.rating, a.user_ratings_total,
-            a.is_cafe, p.day_of_week, p.open_time, p.close_time
+            a.is_cafe, a.place_id, p.day_of_week, p.open_time, p.close_time
         FROM attractions a
         LEFT JOIN opening_period p ON a.content_id = p.content_id
         WHERE a.area_code = #{areaCode}
@@ -61,7 +62,7 @@
             a.addr1, a.addr2, a.content_id, a.content_type_id,
             a.first_image1, a.first_image2, a.latitude, a.longitude,
             a.title, a.zipcode, a.rating, a.user_ratings_total,
-            a.is_cafe, p.day_of_week, p.open_time, p.close_time
+            a.is_cafe, a.place_id, p.day_of_week, p.open_time, p.close_time
         FROM attractions a
         LEFT JOIN opening_period p ON a.content_id = p.content_id
         WHERE a.content_id = #{contentId}
@@ -104,4 +105,34 @@
     		(#{contentId}, #{p.dayOfWeek}, #{p.openTime}, #{p.closeTime})
     	</foreach>
     </insert>
+    
+    <select id="getTourDataByPlaceId" resultType="com.ssafy.enjoytrip.tour.dto.TourDTO">
+        SELECT
+            a.addr1, a.addr2, a.content_id, a.content_type_id,
+            a.first_image1, a.first_image2, a.latitude, a.longitude,
+            a.title, a.zipcode, a.rating, a.user_ratings_total,
+            a.is_cafe, a.place_id, p.day_of_week, p.open_time, p.close_time
+        FROM attractions a
+        LEFT JOIN opening_period p ON a.content_id = p.content_id
+        WHERE a.place_id = #{placeId}
+    </select>
+    
+	<select id="findNearby" resultType="com.ssafy.enjoytrip.tour.dto.TourDTO">
+	    SELECT
+            a.addr1, a.addr2, a.content_id, a.content_type_id,
+            a.first_image1, a.first_image2, a.latitude, a.longitude,
+            a.title, a.zipcode, a.rating, a.user_ratings_total,
+            a.is_cafe, a.place_id, p.day_of_week, p.open_time, p.close_time
+	    FROM attractions
+	    WHERE latitude BETWEEN #{latMin} AND #{latMax}
+	      AND longitude BETWEEN #{lngMin} AND #{lngMax}
+	</select>
+	
+	<update id="updatePlaceId" parameterType="com.ssafy.enjoytrip.tour.dto.TourDTO">
+   		UPDATE attractions
+   		SET
+   			place_id = #{placeId}
+   		WHERE
+   			content_id = #{contentId}
+    </update>
 </mapper>

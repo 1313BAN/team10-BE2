@@ -26,5 +26,6 @@ public class TourDTO {
 	private Integer totalRatings; // null 가능
 	private boolean isCafe;
 	
+	private String placeId;
 	private OpeningHoursDTO openingHours;
 }

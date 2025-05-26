@@ -37,7 +37,14 @@ public class BlockBuilder {
 			LocalDateTime arrival = stop.getStartTime();
 			LocalDateTime departure = stop.getEndTime();
 			
-			//
+			// 구간 1: currentStart ~ stop.arrival
+			if (currentStart.isBefore(arrival)) {
+				blocks.add(new TimeBlock(
+						currentStart, arrival,
+						previousVisit != null, true,
+						previousVisit, new VisitDTO(stop.toScoredPlace(), arrival, departure)
+						));
+			}
 		}
 		
 		return null;

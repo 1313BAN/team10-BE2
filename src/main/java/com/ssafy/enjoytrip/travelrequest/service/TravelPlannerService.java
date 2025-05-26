@@ -1,16 +1,12 @@
 package com.ssafy.enjoytrip.travelrequest.service;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
 import com.ssafy.enjoytrip.travelrequest.dto.ScoredPlaceDTO;
-import com.ssafy.enjoytrip.travelrequest.dto.request.DailyTimeRangeDTO;
 import com.ssafy.enjoytrip.travelrequest.dto.request.TravelRequestDTO;
-import com.ssafy.enjoytrip.travelrequest.dto.response.DailyPlanDTO;
 import com.ssafy.enjoytrip.travelrequest.dto.response.PlanDTO;
 import com.ssafy.enjoytrip.travelrequest.service.util.StayTimeCalculator;
 
@@ -58,6 +54,4 @@ public class TravelPlannerService {
     	
     	return null;
     }
-    
-    private DailyPlanDTO
 }

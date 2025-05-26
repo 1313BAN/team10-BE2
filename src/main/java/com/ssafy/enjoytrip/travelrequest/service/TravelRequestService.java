@@ -7,12 +7,14 @@ import org.springframework.stereotype.Service;
 
 import com.ssafy.enjoytrip.tour.dto.TourDTO;
 import com.ssafy.enjoytrip.tour.service.TourDataService;
+import com.ssafy.enjoytrip.travelrequest.dto.MatchedStopoverDTO;
 import com.ssafy.enjoytrip.travelrequest.dto.ScoredPlaceDTO;
 import com.ssafy.enjoytrip.travelrequest.dto.request.TravelRequestDTO;
 import com.ssafy.enjoytrip.travelrequest.dto.response.PlanDTO;
 import com.ssafy.enjoytrip.travelrequest.service.util.DistanceMatrixBuilder;
 import com.ssafy.enjoytrip.travelrequest.service.util.PlaceCategorizer;
 import com.ssafy.enjoytrip.travelrequest.service.util.PlaceSelector;
+import com.ssafy.enjoytrip.travelrequest.service.util.StopoverProcessor;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,6 +27,7 @@ public class TravelRequestService {
     private final PlaceSelector selector;
     private final DistanceMatrixBuilder matrixBuilder;
     private final OpeningHoursService openingHoursService;
+    private final StopoverProcessor stopoverProcessor;
     private final TravelPlannerService planner;
     
     public PlanDTO getTravelPlan(TravelRequestDTO request) {
@@ -87,6 +90,9 @@ public class TravelRequestService {
          *  TODO : attraction 테이블에 운영 시간 column 추가
          */
         openingHoursService.fillOpeningHours(selectedPlaces);
+        
+        // 8. 경유지 DB에서 조회 후 TourDTO와 합쳐서 MatchedStopover 생성
+        List<MatchedStopoverDTO> resolvedStopovers = stopoverProcessor.resolveStopovers(request.getStopovers());
         
         /* 
          * 8. 그리디하게 날짜별로 장소 분배

@@ -61,3 +61,6 @@ lombok.config
 # 대용량 파일
 src/main/resources/data/south-korea-latest.osm.pbf
 data/graph-cache
+
+# application.properties
+src/main/resources/application.properties

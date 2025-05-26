@@ -23,4 +23,12 @@ public interface ITourDAO {
 	int updateRatingInfo(TourDTO tourData);
 	int updateCafe(TourDTO tourData);
 	int insertOpeningPeriods(Map<String, Object> param);
+	
+	TourDTO getTourDataByPlaceId(@Param("placeId") String placeId);
+	List<TourDTO> findNearby(
+			@Param("latMin") double latMin,
+			@Param("latMax") double latMax,
+			@Param("lngMin") double lngMin, 
+			@Param("lngMax") double lngMax);
+	int updatePlaceId(TourDTO tourData);
 }
