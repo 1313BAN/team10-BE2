@@ -1,4 +1,4 @@
-package com.ssafy.enjoytrip.travelrequest.client;
+package com.ssafy.enjoytrip.google.client;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,10 +13,11 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.ssafy.enjoytrip.google.dto.GooglePlacesDetailDTO;
 import com.ssafy.enjoytrip.tour.dto.TourDTO;
-import com.ssafy.enjoytrip.travelrequest.dto.GooglePlacesDetailDTO;
 import com.ssafy.enjoytrip.travelrequest.dto.OpeningHoursDTO;
 import com.ssafy.enjoytrip.travelrequest.dto.OpeningPeriodDTO;
+import com.ssafy.enjoytrip.travelrequest.dto.PlaceContext;
 import com.ssafy.enjoytrip.travelrequest.dto.RatingDTO;
 
 import lombok.RequiredArgsConstructor;
@@ -33,13 +34,12 @@ public class GooglePlacesApiClient {
 	
 	private final RestTemplate restTemplate;
 	
-	private List<String> getPlaceId(TourDTO attraction) {
-		String title = attraction.getTitle();
-		String address = attraction.getAddr1();
+	private List<String> getPlaceId(String... inputs) {
+		String input = String.join(" ", inputs);
 		
 		String url = API_URL
 				+ "/findplacefromtext/json"
-				+ "?input=" + title + " " + address
+				+ "?input=" + input
 				+ "&inputtype=textquery"
 				+ "&fields=place_id"
 				+ "&key=" + API_KEY;
@@ -67,14 +67,19 @@ public class GooglePlacesApiClient {
 		}
 	}
 	
-	private String getFirstPlaceId(TourDTO attraction) {
-		List<String> placeIds = getPlaceId(attraction);
+	public String getFirstPlaceId(String... inputs) {
+		List<String> placeIds = getPlaceId(inputs);
 		
 		if (!placeIds.isEmpty()) return placeIds.get(0);
 		else return null;
 	}
 	
-	private GooglePlacesDetailDTO getDetailInfo(String placeId, List<String> fields) {
+	public String getFirstPlaceId(PlaceContext context) {
+		return getFirstPlaceId(context.getName(), context.getAddress());
+	}
+	
+	public GooglePlacesDetailDTO getDetailInfo(String placeId, List<String> fields) {
+		if (placeId == null || fields == null) return null;
 
 		String url = API_URL
 				+ "/details/json"
@@ -119,11 +124,13 @@ public class GooglePlacesApiClient {
 		}
 	}
 	
-	public Optional<RatingDTO> getRatingInfo(TourDTO place) {
-		
-		String placeId = getFirstPlaceId(place);
+	public String getFirstPlaceId(TourDTO place) {
+		return getFirstPlaceId(place.getTitle(), place.getAddr1());
+	}
+	
+	public Optional<RatingDTO> getRatingInfo(String placeId) {
 		if (placeId == null) return Optional.empty();
-		
+
 		List<String> fields = List.of("rating", "user_ratings_total");
 		GooglePlacesDetailDTO detail = getDetailInfo(placeId, fields);
 		if (detail == null) return Optional.empty();
@@ -144,9 +151,7 @@ public class GooglePlacesApiClient {
 		return Optional.empty();
 	}
 	
-	public Optional<List<String>> getTypes(TourDTO place) {
-		
-		String placeId = getFirstPlaceId(place);
+	public Optional<List<String>> getTypes(String placeId) {
 		if (placeId == null) return Optional.empty();
 		
 		List<String> fields = List.of("types");
@@ -171,9 +176,7 @@ public class GooglePlacesApiClient {
 	}
 	
 	// 운영 시간 가져오기
-	public Optional<OpeningHoursDTO> getOpeningHours(TourDTO place) {
-		
-		String placeId = getFirstPlaceId(place);
+	public Optional<OpeningHoursDTO> getOpeningHours(String placeId) {
 		if (placeId == null) return Optional.empty();
 		
 		List<String> fields = List.of("opening_hours");

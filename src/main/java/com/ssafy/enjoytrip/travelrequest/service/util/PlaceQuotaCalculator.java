@@ -11,6 +11,7 @@ import com.ssafy.enjoytrip.travelrequest.dto.request.TravelRequestDTO;
 public class PlaceQuotaCalculator {
     final int attractionPerDay = 4;
     final double lodgePerDay = 0.5;
+    final int shoppingPerDay = 2;
     final int restaurantPerDay = 3;
     final int cafePerDay = 1;
     
@@ -21,6 +22,7 @@ public class PlaceQuotaCalculator {
         Map<String, Integer> result = new HashMap<>();
         result.put("attractions", attractionPerDay * totalDays);
         result.put("lodges", (int) (lodgePerDay * totalDays));
+        result.put("shoppings", shoppingPerDay * totalDays);
         result.put("restaurants", restaurantPerDay * totalDays);
         result.put("cafes", cafePerDay * totalDays);
 

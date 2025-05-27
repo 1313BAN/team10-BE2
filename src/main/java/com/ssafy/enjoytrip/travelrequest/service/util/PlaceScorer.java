@@ -1,14 +1,12 @@
 package com.ssafy.enjoytrip.travelrequest.service.util;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
-import com.ssafy.enjoytrip.tour.dto.TourDTO;
-import com.ssafy.enjoytrip.travelrequest.dto.ScoredPlaceDTO;
+import com.ssafy.enjoytrip.travelrequest.dto.PlaceContext;
 
 @Component
 public class PlaceScorer {
@@ -18,49 +16,32 @@ public class PlaceScorer {
 	private final int UPPER_BOUND = 2000;
 
 	// with preferred types
-	public List<ScoredPlaceDTO> scorePlaces(List<TourDTO> places, List<Integer> preferredTypes) {
+	public void scorePlaces(List<PlaceContext> places, List<Integer> preferredTypes) {
 		Set<Integer> preferredTypesSet = new HashSet<>();
 		for (Integer type : preferredTypes) preferredTypesSet.add(type);
 		
-		List<ScoredPlaceDTO> result = new ArrayList<>();
-		for (TourDTO place : places) {
-			result.add(
-				new ScoredPlaceDTO(
-						place,
-						calculateScore(place, preferredTypesSet.contains(place.getContentTypeId()))
-						)
-				);
+		for (PlaceContext place : places) {
+			place.setScore(calculateScore(place, preferredTypesSet.contains(place.getContentTypeId())));
 		}
-		
-		return result;
 	}
 	
 	// without preferred types
-	public List<ScoredPlaceDTO> scorePlaces(List<TourDTO> places) {
-		List<ScoredPlaceDTO> result = new ArrayList<>();
-		for (TourDTO place : places) {
-			result.add(
-				new ScoredPlaceDTO(
-						place,
-						calculateScore(place, false)
-						)
-				);
+	public void scorePlaces(List<PlaceContext> places) {
+		for (PlaceContext place : places) {
+			place.setScore(calculateScore(place, false));
 		}
-		
-		return result;
 	}
 	
-	private double calculateScore(TourDTO place, boolean isPreferred) {
+	private double calculateScore(PlaceContext place, boolean isPreferred) {
 		double score = 0.0;
 		
-		double rating = place.getRating();
-		int totalRatings = place.getTotalRatings();
+		Double rating = place.getRating();
+		Integer totalRatings = place.getTotalRatings();
 		
 		// 평점 정보 없을 경우 0으로 재조정
-		if (rating < 0) {
-			rating = 0;
-			totalRatings = 0;
-		}
+		if (rating == null || rating < 0) rating = 0.0;
+		if (totalRatings == null || totalRatings < 0) totalRatings = 0;
+		
 		// 리뷰 수 upper bound 제한
 		totalRatings = Math.min(totalRatings, UPPER_BOUND);
 		

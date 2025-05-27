@@ -3,7 +3,7 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
   
-<mapper namespace="com.ssafy.enjoytrip.model.dao.IUserDAO">
+<mapper namespace="com.ssafy.enjoytrip.user.dao.IUserDAO">
 
 	<insert id="insert" useGeneratedKeys="true" keyProperty="id">
 		INSERT INTO user (username, email, password, name) VALUES (#{username}, #{email}, #{password}, #{name})
@@ -14,7 +14,7 @@
 	<delete id="delete">
 		DELETE FROM user WHERE id = #{id}
 	</delete>
-	<select id="getUserByEmail" resultType="UserDTO">
+	<select id="getUserByEmail" resultType="com.ssafy.enjoytrip.user.dto.UserDTO">
 		SELECT
 			id,
 			username,

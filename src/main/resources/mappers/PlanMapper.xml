@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.enjoytrip.plan.dao.IPlanDAO">
+
+  <!-- 1. Plan 관련 -->
+  <insert id="insertPlan" parameterType="com.ssafy.enjoytrip.travelrequest.dto.response.PlanDTO" useGeneratedKeys="true" keyProperty="planId">
+    INSERT INTO plan (user_id, title, sido_name, start_date, end_date)
+    VALUES (#{userId}, #{title}, #{sidoName}, #{startDate}, #{endDate});
+  </insert>
+
+  <update id="updatePlan">
+    UPDATE plan
+    SET title = #{plan.title},
+        sido_name = #{plan.sidoName},
+        start_date = #{plan.startDate},
+        end_date = #{plan.endDate}
+    WHERE id = #{planId}
+  </update>
+
+  <delete id="deletePlan">
+    DELETE FROM plan WHERE id = #{planId}
+  </delete>
+
+  <select id="getPlanById" parameterType="int" resultType="com.ssafy.enjoytrip.travelrequest.dto.response.PlanDTO">
+    SELECT id AS PlanId, user_id AS userId, title, sido_name as sidoName, start_date as startDate, end_date as endDate FROM plan WHERE id = #{id}
+  </select>
+
+  <select id="getPlansByUserId" parameterType="int" resultType="com.ssafy.enjoytrip.travelrequest.dto.response.PlanDTO">
+    SELECT id AS PlanId, user_id AS userId, title, sido_name as sidoName, start_date as startDate, end_date as endDate FROM plan WHERE user_id = #{userId} ORDER BY created_at DESC
+  </select>
+
+  <!-- 2. DailyPlan 관련 -->
+  <insert id="insertDailyPlan" parameterType="com.ssafy.enjoytrip.travelrequest.dto.response.DailyPlanDTO" useGeneratedKeys="true" keyProperty="dailyPlanId">
+    INSERT INTO daily_plan (plan_id, travel_date)
+    VALUES (#{planId}, #{date});
+  </insert>
+
+  <delete id="deleteDailyPlanByPlanId" parameterType="int">
+    DELETE FROM daily_plan WHERE plan_id = #{planId}
+  </delete>
+
+  <select id="getDailyPlansByPlanId" parameterType="int" resultType="com.ssafy.enjoytrip.travelrequest.dto.response.DailyPlanDTO">
+    SELECT id AS dailyPlanId, plan_id AS planId, travel_date AS date
+    FROM daily_plan
+    WHERE plan_id = #{planId}
+    ORDER BY travel_date ASC
+  </select>
+
+  <!-- 3. Visit 관련 -->
+  <insert id="insertVisit" parameterType="com.ssafy.enjoytrip.travelrequest.dto.response.VisitDTO" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO visit (daily_plan_id, place_id, start_time, end_time, visit_order)
+    VALUES (#{dailyPlanId}, #{placeId}, #{startTime}, #{endTime}, #{visitOrder});
+  </insert>
+
+  <delete id="deleteVisitsByDailyPlanId" parameterType="int">
+    DELETE FROM visit WHERE daily_plan_id = #{dailyPlanId}
+  </delete>
+
+  <select id="getVisitsByDailyPlanId" parameterType="int" resultType="com.ssafy.enjoytrip.travelrequest.dto.response.VisitDTO">
+    SELECT id,
+           daily_plan_id AS dailyPlanId,
+           place_id AS placeId,
+           content_id AS contentId,
+           start_time AS startTime,
+           end_time AS endTime,
+           visit_order as visitOrder
+    FROM visit
+    WHERE daily_plan_id = #{dailyPlanId}
+    ORDER BY visit_order ASC
+  </select>
+  <select id="getVisitsWithPlaceByDailyPlanId" resultType="com.ssafy.enjoytrip.travelrequest.dto.response.VisitDTO">
+	  SELECT
+	    v.id,
+	    v.daily_plan_id AS dailyPlanId,
+	    v.place_id AS placeId,
+	    v.start_time AS startTime,
+	    v.end_time AS endTime,
+	    v.visit_order AS visitOrder,
+	
+	    gp.name AS name,
+	    gp.latitude AS latitude,
+	    gp.longitude AS longitude,
+	    gp.address AS address,
+	    gp.image AS image,
+	    gp.rating AS rating,
+	    gp.user_ratings_total AS totalRatings,
+	    gp.content_type_id AS contentTypeId
+	
+	  FROM visit v
+	  JOIN google_places gp ON v.place_id = gp.place_id
+	  WHERE v.daily_plan_id = #{dailyPlanId}
+	  ORDER BY v.visit_order ASC
+	</select>
+
+</mapper>

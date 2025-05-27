@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.ssafy.enjoytrip.google.dao.GooglePlacesCacheDAO">
+    
+	<select id="getCacheByPlaceId" resultType="com.ssafy.enjoytrip.google.dto.GooglePlacesCacheDTO">
+		SELECT *
+        FROM google_places
+        WHERE place_id = #{placeId}
+	</select>
+    
+    <insert id="insertCache" parameterType="com.ssafy.enjoytrip.google.dto.GooglePlacesCacheDTO">
+    	INSERT INTO google_places (place_id, name, latitude, longitude, address, image, is_cafe, rating, user_ratings_total) 
+    	VALUES (#{placeId}, #{name}, #{latitude}, #{longitude}, #{address}, #{image}, #{isCafe}, #{rating}, #{totalRatings})
+    </insert>
+    
+    <update id="updateCache" parameterType="com.ssafy.enjoytrip.google.dto.GooglePlacesCacheDTO">
+	    UPDATE google_places
+	    SET
+	        content_type_id = #{contentTypeId},
+	        name = #{name},
+	        latitude = #{latitude},
+	        longitude = #{longitude},
+	        address = #{address},
+	        image = #{image},
+	        is_cafe = #{isCafe},
+	        rating = #{rating},
+	        user_ratings_total = #{totalRatings}
+	    WHERE
+	        place_id = #{placeId}
+    </update>
+</mapper>

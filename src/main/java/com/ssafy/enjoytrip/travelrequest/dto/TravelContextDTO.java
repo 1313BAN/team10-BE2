@@ -32,7 +32,7 @@ public class TravelContextDTO {
 	private int totalDays;
 	private List<DailyTimeRangeDTO> dailyTimeRanges;
 
-	private List<MatchedStopoverDTO> stopovers;
+	private List<PlaceContext> stopovers;
 	
 	/*
 	 * 0: 느긋한 여행
@@ -40,7 +40,7 @@ public class TravelContextDTO {
 	 */
 	private int travleStyle;
 	
-	private Map<String, List<ScoredPlaceDTO>> selectedPlaces;
+	private Map<String, List<PlaceContext>> selectedPlaces;
 	
 	private Map<Integer, Map<Integer, Integer>> distanceMatrix;
 	

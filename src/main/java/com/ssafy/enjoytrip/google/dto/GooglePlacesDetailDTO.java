@@ -1,4 +1,4 @@
-package com.ssafy.enjoytrip.travelrequest.dto;
+package com.ssafy.enjoytrip.google.dto;
 
 import java.util.Map;
 

@@ -22,7 +22,7 @@
         <result property="isCafe" column="is_cafe"/>
 
 		<result property="placeId" column="place_id"/>
-        <collection property="openingHours.periods" ofType="com.ssafy.enjoytrip.tour.dto.OpeningPeriodDTO">
+        <collection property="openingHours.periods" ofType="com.ssafy.enjoytrip.travelrequest.dto.OpeningPeriodDTO">
             <result property="dayOfWeek" column="day_of_week"/>
             <result property="openTime" column="open_time"/>
             <result property="closeTime" column="close_time"/>
@@ -44,7 +44,7 @@
 		SELECT
             a.addr1, a.addr2, a.content_id, a.content_type_id,
             a.first_image1, a.first_image2, a.latitude, a.longitude,
-            a.title, a.zipcode, a.rating, a.user_ratings_total,
+            a.title, a.rating, a.user_ratings_total,
             a.is_cafe, a.place_id, p.day_of_week, p.open_time, p.close_time
         FROM attractions a
         LEFT JOIN opening_period p ON a.content_id = p.content_id
@@ -61,25 +61,31 @@
         SELECT
             a.addr1, a.addr2, a.content_id, a.content_type_id,
             a.first_image1, a.first_image2, a.latitude, a.longitude,
-            a.title, a.zipcode, a.rating, a.user_ratings_total,
+            a.title, a.rating, a.user_ratings_total,
             a.is_cafe, a.place_id, p.day_of_week, p.open_time, p.close_time
         FROM attractions a
         LEFT JOIN opening_period p ON a.content_id = p.content_id
         WHERE a.content_id = #{contentId}
     </select>
     
-    <select id="getCoordinates" resultType="com.ssafy.enjoytrip.model.dto.CoordinateDTO">
-    	SELECT
-    		latitude,
-    		longitude
-    	FROM
-    		attractions
-    	WHERE
-    		content_id IN
-    		<foreach item="id" collection="list" open="(" separator="," close=")">
-    			#{id}
-    		</foreach>
-    </select>
+    <update id="update" parameterType="com.ssafy.enjoytrip.tour.dto.TourDTO">
+	    UPDATE attractions
+	    SET
+	        addr1 = #{addr1},
+	        addr2 = #{addr2},
+	        content_type_id = #{contentTypeId},
+	        first_image1 = #{image},
+	        first_image2 = #{imageThumbnail},
+	        latitude = #{latitude},
+	        longitude = #{longitude},
+	        title = #{title},
+	        rating = #{rating},
+	        user_ratings_total = #{totalRatings},
+	        is_cafe = #{isCafe},
+	        place_id = #{placeId}
+	    WHERE
+	        content_id = #{contentId}
+    </update>
     
     <update id="updateRatingInfo" parameterType="com.ssafy.enjoytrip.tour.dto.TourDTO">
    		UPDATE attractions
@@ -110,7 +116,7 @@
         SELECT
             a.addr1, a.addr2, a.content_id, a.content_type_id,
             a.first_image1, a.first_image2, a.latitude, a.longitude,
-            a.title, a.zipcode, a.rating, a.user_ratings_total,
+            a.title, a.rating, a.user_ratings_total,
             a.is_cafe, a.place_id, p.day_of_week, p.open_time, p.close_time
         FROM attractions a
         LEFT JOIN opening_period p ON a.content_id = p.content_id
@@ -121,7 +127,7 @@
 	    SELECT
             a.addr1, a.addr2, a.content_id, a.content_type_id,
             a.first_image1, a.first_image2, a.latitude, a.longitude,
-            a.title, a.zipcode, a.rating, a.user_ratings_total,
+            a.title, a.rating, a.user_ratings_total,
             a.is_cafe, a.place_id, p.day_of_week, p.open_time, p.close_time
 	    FROM attractions
 	    WHERE latitude BETWEEN #{latMin} AND #{latMax}

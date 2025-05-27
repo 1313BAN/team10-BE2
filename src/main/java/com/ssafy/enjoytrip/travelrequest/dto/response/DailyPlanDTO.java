@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class DailyPlanDTO {
 	private int dailyPlanId;
+	private int planId;
     private LocalDate date;  // "yyyy-MM-dd" 형식
     private List<VisitDTO> visits;
 }

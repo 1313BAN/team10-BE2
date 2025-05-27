@@ -21,7 +21,6 @@ public class TourDTO {
 	private double latitude;
 	private double longitude;
 	private String title;
-	private String zipcode;
 	private Double rating; // null 가능
 	private Integer totalRatings; // null 가능
 	private boolean isCafe;

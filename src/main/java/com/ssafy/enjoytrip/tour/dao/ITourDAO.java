@@ -20,6 +20,7 @@ public interface ITourDAO {
 			@Param("sigunguCode") Integer sigunguCode, 
 			@Param("contentTypeId") Integer contentTypeId);
 	TourDTO getTourDataByContentId(@Param("contentId") int contentId);
+	int update(TourDTO tourData);
 	int updateRatingInfo(TourDTO tourData);
 	int updateCafe(TourDTO tourData);
 	int insertOpeningPeriods(Map<String, Object> param);

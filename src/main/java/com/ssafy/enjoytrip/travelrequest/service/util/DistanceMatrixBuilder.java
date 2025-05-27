@@ -1,6 +1,6 @@
 package com.ssafy.enjoytrip.travelrequest.service.util;
 
-import java.util.ArrayList;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +11,7 @@ import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
 import com.graphhopper.GraphHopper;
 import com.graphhopper.ResponsePath;
-import com.ssafy.enjoytrip.travelrequest.dto.ScoredPlaceDTO;
+import com.ssafy.enjoytrip.travelrequest.dto.PlaceContext;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,59 +21,42 @@ public class DistanceMatrixBuilder {
 
 	private final GraphHopper graphHopper;
 	
-    public Map<Integer, Map<Integer, Integer>> build(List<ScoredPlaceDTO> places) {
+    public Map<String, Map<String, Duration>> build(List<PlaceContext> places) {
         // GraphHopper로 거리 계산
+    	// placeId 기반
 
-        Map<Integer, Map<Integer, Integer>> matrix = new HashMap<>();
+        Map<String, Map<String, Duration>> matrix = new HashMap<>();
+        
+        for (PlaceContext from : places) {
+            Map<String, Duration> distanceFrom = new HashMap<>();
+            for (PlaceContext to : places) {
+                String fromId = from.getPlaceId();
+                String toId = to.getPlaceId();
 
-        for (ScoredPlaceDTO from : places) {
-            Map<Integer, Integer> distanceFrom = new HashMap<>();
-            for (ScoredPlaceDTO to : places) {
-                int fromId = from.getPlace().getContentId();
-                int toId = to.getPlace().getContentId();
-
-                if (fromId == toId) {
-                    distanceFrom.put(toId, 0);
+                if (fromId.equals(toId)) {
+                    distanceFrom.put(toId, Duration.ZERO);
                     continue;
                 }
 
                 GHRequest req = new GHRequest(
-                    from.getPlace().getLatitude(), from.getPlace().getLongitude(),
-                    to.getPlace().getLatitude(), to.getPlace().getLongitude()
+                    from.getLatitude(), from.getLongitude(),
+                    to.getLatitude(), to.getLongitude()
                 ).setProfile("car");
 
                 GHResponse res = graphHopper.route(req);
 
                 if (res.hasErrors()) {
-                    distanceFrom.put(toId, Integer.MAX_VALUE);
+                    distanceFrom.put(toId, Duration.ofHours(999));
                     System.err.printf("Route error: %s → %s\n", fromId, toId);
                 } else {
                     ResponsePath path = res.getBest();
-                    int timeInMinutes = (int) (path.getTime() / 1000 / 60); // ms → 분
-                    distanceFrom.put(toId, timeInMinutes);
+                    Duration travelTime = Duration.ofMillis(path.getTime());
+                    distanceFrom.put(toId, travelTime);
                 }
             }
-            matrix.put(from.getPlace().getContentId(), distanceFrom);
+            matrix.put(from.getPlaceId(), distanceFrom);
         }
 
         return matrix;
-    }
-    
-    public Map<Integer, Map<Integer, Integer>> build(Map<String, List<ScoredPlaceDTO>> places) {
-
-    	// Map을 하나의 리스트로 합치기
-    	List<ScoredPlaceDTO> combinedList = combineMapToList(places);
-    	
-    	return build(combinedList);
-    }
-    
-    private List<ScoredPlaceDTO> combineMapToList(Map<String, List<ScoredPlaceDTO>> map) {
-    	List<ScoredPlaceDTO> combinedList = new ArrayList<>();
-    	
-    	for (List<ScoredPlaceDTO> list : map.values()) {
-    		combinedList.addAll(list);
-    	}
-    	
-    	return combinedList;
     }
 }

@@ -1,5 +1,7 @@
 package com.ssafy.enjoytrip.travelrequest.service;
 
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -7,14 +9,14 @@ import org.springframework.stereotype.Service;
 
 import com.ssafy.enjoytrip.tour.dto.TourDTO;
 import com.ssafy.enjoytrip.tour.service.TourDataService;
-import com.ssafy.enjoytrip.travelrequest.dto.MatchedStopoverDTO;
-import com.ssafy.enjoytrip.travelrequest.dto.ScoredPlaceDTO;
+import com.ssafy.enjoytrip.travelrequest.dto.PlaceContext;
 import com.ssafy.enjoytrip.travelrequest.dto.request.TravelRequestDTO;
 import com.ssafy.enjoytrip.travelrequest.dto.response.PlanDTO;
+import com.ssafy.enjoytrip.travelrequest.service.util.DataProcessor;
 import com.ssafy.enjoytrip.travelrequest.service.util.DistanceMatrixBuilder;
 import com.ssafy.enjoytrip.travelrequest.service.util.PlaceCategorizer;
+import com.ssafy.enjoytrip.travelrequest.service.util.PlaceFilter;
 import com.ssafy.enjoytrip.travelrequest.service.util.PlaceSelector;
-import com.ssafy.enjoytrip.travelrequest.service.util.StopoverProcessor;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,11 +25,12 @@ import lombok.RequiredArgsConstructor;
 public class TravelRequestService {
 
     private final TourDataService tourDataService;
+    private final DataProcessor processor;
     private final PlaceCategorizer categorizer;
     private final PlaceSelector selector;
+    private final PlaceFilter placeFilter;
+    
     private final DistanceMatrixBuilder matrixBuilder;
-    private final OpeningHoursService openingHoursService;
-    private final StopoverProcessor stopoverProcessor;
     private final TravelPlannerService planner;
     
     public PlanDTO getTravelPlan(TravelRequestDTO request) {
@@ -54,45 +57,32 @@ public class TravelRequestService {
          */
         
         // 1. 여행 지역 기반으로 모든 장소 목록 구하기
-        List<TourDTO> allPlaces = filterByArea(request);
+        List<TourDTO> allPlaces = tourDataService.getTourDatum(
+        		request.getAreaCode(), 
+        		request.getSigunguCode(), null);
         
-        /* 
-         * DB 기준 장소 타입
-         * 12: 관광지
-         * 14: 문화시설
-         * 15: 축제공연행사
-         * 25: 여행코스
-         * 28: 레포츠
-         * 32: 숙박
-         * 38: 쇼핑
-         * 39: 음식점
-         */
-        /*
-         *  2. 나머지 / 숙박 / 쇼핑 / 음식점 / 카페로 나누기
-         *  여행코스는 제외
-         */
-        Map<String, List<TourDTO>> categorizedPlaces = categorizer.categorize(allPlaces);
+        // 2. placeId 있는지 확인하고 없다면 구글에서 정보 받아오기 ( rating, totalRatings, isCafe, openingHours )
+        List<PlaceContext> contexts = processor.toursToContexts(allPlaces);
         
-        /*
-         * 3. 점수 매기고 정렬하기
-         * 4. 일단 총 날짜만 단순하게 고려해서 필요한 장소 개수 구하기
-         * 5. 점수 분포 상위 장소만 추리기. 필요한 장소의 1배수 이상으로
-         * 랜덤성 확보를 위해 상위 40%를 넘지 않는 선에서 필요한 장소의 2배수까지 개수 늘리고 shuffle
-         */
-        Map<String, List<ScoredPlaceDTO>> selectedPlaces = selector.scoreAndSelect(categorizedPlaces, request);
+        // 3. 경유지 부족한 정보 보충 ( 캐시 테이블 혹은 구글 ) ( contentTypeId )
+        List<PlaceContext> fixedContexts = processor.stopoversToContexts(request.getStopovers());
+
+        // 4. 나머지 / 숙박 / 쇼핑 / 음식점 / 카페로 나누기, 여행코스는 제외
+        Map<String, List<PlaceContext>> categorizedPlaces = categorizer.categorize(contexts);
         
-        // 6. 이동 시간 행렬 만들기
-        Map<Integer, Map<Integer, Integer>> distanceMatrix = matrixBuilder.build(selectedPlaces);
+        // 5. 점수 매기고 정렬하기
+        Map<String, List<PlaceContext>> selectedPlaces = selector.scoreAndSelect(categorizedPlaces, request);
         
-        /*
-         *  7. 상위 장소들에 대해 Google API 통해서 운영 시간 데이터 얻어오기
-         *  DB에 캐싱 되어있다면 그대로 사용
-         *  TODO : attraction 테이블에 운영 시간 column 추가
-         */
-        openingHoursService.fillOpeningHours(selectedPlaces);
+        // 6. 선택된 리스트에서 중복 제거하기
+        Map<String, List<PlaceContext>> cleaned = placeFilter.removeDuplicatesWithFixed(
+        	    selectedPlaces, fixedContexts
+        	);
         
-        // 8. 경유지 DB에서 조회 후 TourDTO와 합쳐서 MatchedStopover 생성
-        List<MatchedStopoverDTO> resolvedStopovers = stopoverProcessor.resolveStopovers(request.getStopovers());
+        // 7. 이동 시간 행렬 만들기
+        List<PlaceContext> combinedList = new ArrayList<>();
+        combinedList.addAll(fixedContexts);
+        for (List<PlaceContext> list : cleaned.values()) combinedList.addAll(list);
+        Map<String, Map<String, Duration>> distanceMatrix = matrixBuilder.build(combinedList);
         
         /* 
          * 8. 그리디하게 날짜별로 장소 분배
@@ -103,13 +93,7 @@ public class TravelRequestService {
          * 시간 구간 양쪽 끝에 경유지 존재시, 어떻게 하지?
          * TODO : 최대 이동 시간 및 총 이동 시간 제한 추가
          */
-        return planner.buildPlan(request, selectedPlaces, distanceMatrix);
+        return planner.buildPlan(request, cleaned, fixedContexts, distanceMatrix);
     }
     
-    private List<TourDTO> filterByArea(TravelRequestDTO request) {
-    	int areaCode = request.getAreaCode();
-    	Integer sigunguCode = request.getSigunguCode();
-    	
-        return tourDataService.getTourDatum(areaCode, sigunguCode, null);
-    }
 }

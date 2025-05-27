@@ -114,7 +114,6 @@ public class TourApiClient implements ITourDAO {
 						.latitude(item.path("mapx").asDouble())
 						.longitude(item.path("mapy").asDouble())
 						.title(item.path("title").asText())
-						.zipcode(item.path("zipcode").asText())
 						.build());
 			}
 		} else if (!itemsNode.isMissingNode()) {
@@ -128,7 +127,6 @@ public class TourApiClient implements ITourDAO {
 					.latitude(itemsNode.path("mapx").asDouble())
 					.longitude(itemsNode.path("mapy").asDouble())
 					.title(itemsNode.path("title").asText())
-					.zipcode(itemsNode.path("zipcode").asText())
 					.build());
 		}
 		
@@ -161,7 +159,6 @@ public class TourApiClient implements ITourDAO {
 						.latitude(itemsNode.path("mapx").asDouble())
 						.longitude(itemsNode.path("mapy").asDouble())
 						.title(itemsNode.path("title").asText())
-						.zipcode(itemsNode.path("zipcode").asText())
 						.build();
 	}
 
@@ -185,6 +182,30 @@ public class TourApiClient implements ITourDAO {
 
 	@Override
 	public int insertOpeningPeriods(Map<String, Object> param) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public TourDTO getTourDataByPlaceId(String placeId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<TourDTO> findNearby(double latMin, double latMax, double lngMin, double lngMax) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int updatePlaceId(TourDTO tourData) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int update(TourDTO tourData) {
 		// TODO Auto-generated method stub
 		return 0;
 	}

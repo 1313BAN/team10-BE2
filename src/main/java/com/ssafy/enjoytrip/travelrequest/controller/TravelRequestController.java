@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ssafy.enjoytrip.google.client.GooglePlacesApiClient;
 import com.ssafy.enjoytrip.tour.dto.TourDTO;
-import com.ssafy.enjoytrip.travelrequest.client.GooglePlacesApiClient;
 import com.ssafy.enjoytrip.travelrequest.dto.request.TravelRequestDTO;
 import com.ssafy.enjoytrip.travelrequest.dto.response.PlanDTO;
 import com.ssafy.enjoytrip.travelrequest.service.TravelRequestService;
@@ -39,12 +39,9 @@ public class TravelRequestController {
 	}
 	
 	@RequestMapping("/test")
-	public void test() {
+	public ResponseEntity<PlanDTO> test(@RequestBody @Valid TravelRequestDTO request) {
 		
-	}
-	
-	@RequestMapping("/cafe")
-	public void cafe() {
-		//for (int i=1; i<=8; i++) travelRequestService.cafe(String.valueOf(i));
+		PlanDTO plan = travelRequestService.getTravelPlan(request);
+		return ResponseEntity.ok(plan);
 	}
 }
